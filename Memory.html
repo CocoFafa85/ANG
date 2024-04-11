@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8sh+Wy6p8e8tSKGSKfGTvxUZ3ff2J2ISY6uF5B" crossorigin="anonymous">
+    <style>
+        body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f1bb69;
+        }
+
+        #memory-board {
+        display: grid;
+        justify-content: center;
+        grid-template-columns: repeat(4, 130px);
+        gap: 10px;
+        }
+
+        .row {
+            margin-right: 0;
+            margin-left: 0;
+        }
+
+        .card {
+        width: 130px;
+        height: 110px;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 20px;
+        font-weight: bold;
+        color: #fff8f7;
+        text-align: center;
+        cursor: pointer;
+        background-color: #ab5e37;
+        border: 2px solid #7A0D06;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+        }
+
+        h1 {
+        font-size: 50px;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 5%;
+        margin-top: -8%;
+        font-weight: bold;
+        color: #884422;
+        text-shadow:
+        #000000 0.006em 0.006em 0.007em,
+        #000000 1px 1px 1px,
+        #ab5e37 1px 2px 1px,
+        #ab5e37 1px 3px 1px,
+        #fff8f7 1px 4px 1px,
+        #fff8f7 1px 5px 1px;
+        }
+
+        .hidden {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        white-space: nowrap;
+        padding: 20px;
+        z-index: 2;
+        font-size: 300px;
+        font-weight: bold;
+        color: #f6ff00;
+        text-shadow:
+        #ff6a00 0.006em 0.006em 0.007em,
+        #ff6a00 1px 1px 1px,
+        #ff0000 1px 2px 1px,
+        #ff0000 1px 3px 1px,
+        #000000 1px 4px 1px,
+        #000000 1px 5px 1px;
+        }
+
+        #time-message {
+        font-size:80px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, 100%);
+        text-shadow:
+        #ff6a00 0.006em 0.006em 0.007em,
+        #ff6a00 1px 1px 1px,
+        #ff0000 1px 2px 1px,
+        #ff0000 1px 3px 1px,
+        #ffffff 1px 4px 1px,
+        #ffffff 1px 5px 1px;
+        }
+
+        #moves-counter {
+        font-size:80px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-95%, 200%);
+        text-shadow:
+        #ff6a00 0.006em 0.006em 0.007em,
+        #ff6a00 1px 1px 1px,
+        #ff0000 1px 2px 1px,
+        #ff0000 1px 3px 1px,
+        #ffffff 1px 4px 1px,
+        #ffffff 1px 5px 1px;
+        }
+        
+        .card.initial::before {
+        content: 'Memory Card';
+        font-size: 12px;
+        writing-mode: vertical-rl;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 10px;
+        height: 100%;
+        background-color: #ff0000;
+        }
+
+        .card.initial::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 5px;
+        height: 100%;
+        background-color: #ff2727;
+        }
+
+        .card.shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            20%, 60% {
+                transform: translateX(-10px);
+            }
+            40%, 80% {
+                transform: translateX(10px);
+            }
+        }
+        #restart-button {
+            background-color: #e90202;
+            color: #ffd0b9;
+            padding: 10px 20px;
+            font-size: 12px;
+            border: 2px solid;
+            border-radius: 5px; 
+            border-color: #7A0D06;
+            cursor: pointer; 
+            top: 50%;
+            left: 50%;
+            transform: translate(400%, 125%);
+            position: relative;
+            z-index: 3;
+        }
+
+        #restart-button:hover {
+            background-color: #fc1f1f;
+        }
+
+    </style>
+    <title>Grammatical Memory Game</title>
+</head>
+<body>
+    <div class="row mx-0">
+        <div class="col-6">
+            <button id="restart-button">Restart</button>
+            <h1>Grammatical Memory Game</h1>
+        </div>
+        <div class="col-6">
+            <div id="memory-board"></div>
+            <div id="congratulations-message" class="hidden">
+                <p id="win-message">YOU WIN</p>
+                <p id="time-message"></p>
+                <p id="moves-counter"></p>
+            </div>              
+        </div>
+    </div>
+
+    <script>
+        const associations = [
+        { id: 1, visible: "Present Simple", hidden: "Everyday I brush my teeth." },
+        { id: 2, visible: "Present Continuous", hidden: "I'm brushing my teeth." },
+        { id: 3, visible: "Present Perfect", hidden: "I have brushed my teeth before to kiss him." },
+        { id: 4, visible: "Present Perfect Continous", hidden: "I have been brushing my teeth since this morning." },
+        { id: 5, visible: "Future Simple", hidden: "I will brush my teeth tomorrow morning." },
+        { id: 6, visible: "Future Continuous", hidden: "By this time tomorrow morning, I will be brushing my teeth." },
+        { id: 7, visible: "Future Perfect", hidden: "By tomorrow morning, I will have brushed my teeth." },
+        { id: 8, visible: "Past Simple", hidden: "I brushed my teeth this morning." },
+        { id: 9, visible: "Past Continuous", hidden: "I was brusshing my teeth when my phone rang."  },
+        { id: 10, visible: "Past Perfect", hidden: "I have brushed my teeth before my phone rang." },
+        ];
+
+        const visibleCards = associations.map(card => ({ id: card.id, text: card.visible }));
+        const hiddenCards = associations.map(card => ({ id: card.id, text: card.hidden }));
+
+        const deck = [...visibleCards, ...hiddenCards];
+
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let startTime;
+        let timer;
+        let elapsedTime = 0;
+        let totalMoves = 0;
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function createBoard() {
+            const memoryBoard = document.getElementById('memory-board');
+            shuffle(deck);
+
+            deck.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('card', 'initial');
+                cardElement.dataset.index = index;
+                cardElement.addEventListener('click', flipCard);
+                memoryBoard.appendChild(cardElement);
+            });
+            startTime = new Date();
+            startTimer();
+        }
+
+        function flipCard() {
+            const cardIndex = this.dataset.index;
+            const cardElement = this;
+
+            if (flippedCards.length < 2 && !flippedCards.includes(cardIndex)) {
+                cardElement.textContent = `${deck[cardIndex].text}`;
+                cardElement.classList.remove('initial');
+                cardElement.style.backgroundColor = '#b5663e';
+                flippedCards.push(cardIndex);
+
+            if (flippedCards.length === 2) {
+                totalMoves++;
+                updateMovesDisplay(); // Mettez à jour l'affichage du nombre de coups
+                setTimeout(checkMatch, 300);
+                }
+            }
+        }
+        function updateMovesDisplay() {
+            document.getElementById('moves-counter').textContent = `Moves : ${totalMoves}`;
+        }
+
+        function checkMatch() {
+            const [index1, index2] = flippedCards;
+            const card1 = deck[index1];
+            const card2 = deck[index2];
+
+            if (card1.id === card2.id && card1.text !== card2.text) {
+                flippedCards.forEach(index => {
+                    const cardElement = document.querySelector(`[data-index="${index}"]`);
+                    cardElement.style.backgroundColor = '#1bad3d';
+                    cardElement.style.borderColor = '#fff8f7';
+                });
+
+                matchedPairs++;
+
+                if (matchedPairs === 10) {
+                    const congratulationsMessage = document.getElementById('congratulations-message');
+                    congratulationsMessage.style.display = 'block';
+                    document.getElementById('win-message').textContent = 'YOU WIN';            
+                    document.getElementById('time-message').textContent = `Time   : ${elapsedTime} seconds`;
+                    clearInterval(timer); // Arrêtez le minuteur
+                }
+                
+                flippedCards = [];
+
+            } else {
+                flippedCards.forEach(index => {
+                    const cardElement = document.querySelector(`[data-index="${index}"]`);
+                    cardElement.style.backgroundColor = '#ab5e37';
+                    cardElement.classList.add('shake');
+                });
+
+                flippedCards.forEach(index => { // Désactivez l'écouteur d'événements pendant 3 secondes
+                    const cardElement = document.querySelector(`[data-index="${index}"]`);
+                    cardElement.removeEventListener('click', flipCard);
+                });
+
+                setTimeout(() => {
+                    flippedCards.forEach(index => {
+                        const cardElement = document.querySelector(`[data-index="${index}"]`);
+                        cardElement.textContent = '';
+                        cardElement.style.backgroundColor = '#ab5e37';
+                        cardElement.classList.add('initial');
+                        cardElement.classList.remove('shake');
+                        cardElement.addEventListener('click', flipCard); // Réactivez l'écouteur d'événements
+                    });
+
+                    flippedCards = [];
+                }, 3000);
+            }
+        }
+
+        function startTimer() {
+            timer = setInterval(updateTimer, 1000); // Mettez à jour le minuteur toutes les secondes
+        }
+
+        function updateTimer() {
+            const currentTime = new Date();
+            elapsedTime = Math.floor((currentTime - startTime) / 1000); // Convertissez la différence de temps en secondes
+        }
+
+
+        document.getElementById('restart-button').addEventListener('click', restartGame);
+        function restartGame() {
+            flippedCards = [];
+            matchedPairs = 0;
+            elapsedTime = 0;
+            clearInterval(timer);
+
+            document.getElementById('congratulations-message').style.display = 'none';
+            const memoryBoard = document.getElementById('memory-board');
+            memoryBoard.innerHTML = ''; // Supprimez toutes les cartes actuelles
+
+            createBoard();
+        }
+
+
+    </script>
+</body>
